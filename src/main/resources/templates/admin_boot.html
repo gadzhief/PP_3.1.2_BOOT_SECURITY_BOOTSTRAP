@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Panel</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+        crossorigin="anonymous">
+</head>
+<body class="bg-light">
+<nav class="navbar navbar-dark bg-dark">
+  <div class="container-fluid">
+    <span class="navbar-brand mb-0 h1" th:text="${loggedInUsername} + ' with roles: '"></span>
+    <form th:action="@{/logout}" method="post" class="d-flex">
+      <input type="hidden" name="_method" value="POST">
+      <button class="btn btn-outline-light" type="submit">Logout</button>
+    </form>
+  </div>
+</nav>
+<div class="container-fluid">
+  <div class="row">
+    <nav class="col-md-2 d-none d-md-block px-4 sidebar bg-white">
+      <div class="sidebar-sticky">
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link active" href="#admin">Admin</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#user">User</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4 bg-light">
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Admin panel</h1>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div id="admin">
+            <div class="col-md-10">
+              <ul class="nav nav-tabs">
+                <li class="nav-item">
+                  <a class="nav-link active" href="#">Users table</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/admin/create">New User</a>
+                </li>
+              </ul>
+              <div class="tab-content mt-3">
+                <div class="tab-pane fade show active">
+                  <h3 class="title">All users</h3>
+                  <table class="table table-striped">
+                    <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>First Name</th>
+                      <th>Last Name</th>
+                      <th>Age</th>
+                      <th>Email</th>
+                      <th>Roles</th>
+                      <th>Edit</th>
+                      <th>Delete</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="user, row : ${users}" th:class="${row.odd} ? 'bg-light'">
+                      <td th:text="${user.id}"></td>
+                      <td th:text="${user.firstName}"></td>
+                      <td th:text="${user.lastName}"></td>
+                      <td th:text="${user.age}"></td>
+                      <td th:text="${user.email}"></td>
+                      <td>
+                        <div th:each="role : ${user.roles}">
+                          <span th:text="${role.name}"></span>
+                        </div>
+                      </td>
+                      <td>
+                        <button type="button" class="btn btn-sm btn-info" onclick="editUser('${user.id}')">Edit</button>
+                      </td>
+<!--                      <td>-->
+<!--                        <form th:action="@{/admin/delete/{id}(id=${user.id})}" method="post" onsubmit="return confirm('Are you sure you want to delete this user?')">-->
+<!--                          <input type="hidden" name="_method" value="DELETE">-->
+<!--                          <button type="submit" class="btn btn-sm btn-danger">Delete</button>-->
+<!--                        </form>-->
+<!--                      </td>-->
+                      <td>
+                        <button type="button" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deleteUserModal" data-id="${user.id}" data-first-name="${user.firstName}" data-last-name="${user.lastName}" data-email="${user.email}">Delete</button>
+                      </td>
+                    </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="user" class="d-none">
+            <!-- User content goes here -->
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+
+<!-- Edit user modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1" role="dialog" aria-labelledby="editUserModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editUserModalLabel">Edit User</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form id="editUserForm" method="POST">
+        <div class="modal-body">
+          <!-- Edit user form fields -->
+          <div class="form-group">
+            <label for="editFirstName">First Name</label>
+            <input type="text" class="form-control" id="editFirstName" name="firstName" required>
+          </div>
+          <div class="form-group">
+            <label for="editLastName">Last Name</label>
+            <input type="text" class="form-control" id="editLastName" name="lastName" required>
+          </div>
+          <div class="form-group">
+            <label for="editAge">Age</label>
+            <input type="number" class="form-control" id="editAge" name="age" required>
+          </div>
+          <div class="form-group">
+            <label for="editEmail">Email</label>
+            <input type="email" class="form-control" id="editEmail" name="email" required>
+          </div>
+          <div class="form-group">
+            <label for="editRoles">Roles</label>
+            <select multiple class="form-control" id="editRoles" name="roles" required>
+              <option value="ROLE_USER">User</option>
+              <option value="ROLE_ADMIN">Admin</option>
+            </select>
+          </div>
+          <!-- Edit user ID field (hidden) -->
+          <input type="hidden" id="editUserId" name="id">
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- Delete User Modal -->
+<div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteUserModalLabel">Delete User</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete this user?</p>
+        <table class="table table-bordered">
+          <tr>
+            <th>ID</th>
+            <td id="deleteUserId"></td>
+          </tr>
+          <tr>
+            <th>First Name</th>
+            <td id="deleteUserFirstName"></td>
+          </tr>
+          <tr>
+            <th>Last Name</th>
+            <td id="deleteUserLastName"></td>
+          </tr>
+          <tr>
+            <th>Age</th>
+            <td id="deleteUserAge"></td>
+          </tr>
+          <tr>
+            <th>Email</th>
+            <td id="deleteUserEmail"></td>
+          </tr>
+          <tr>
+            <th>Roles</th>
+            <td id="deleteUserRole"></td>
+          </tr>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <form id="deleteUserForm" method="POST">
+          <input type="hidden" id="deleteUserIdInput" name="userId">
+          <button type="submit" class="btn btn-danger">Delete</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+<script>
+  function editUser(userId) {
+    $.ajax({
+      url: "/admin/edit/" + userId,
+      type: "GET",
+      success: function(user) {
+        // populate the form fields with the user information
+        $("#edit-user-form input[name=id]").val(user.id);
+        $("#edit-user-form input[name=firstName]").val(user.firstName);
+        $("#edit-user-form input[name=lastName]").val(user.lastName);
+        $("#edit-user-form input[name=email]").val(user.email);
+        $("#edit-user-form input[name=age]").val(user.age);
+
+        // open the edit user modal
+        $("#edit-user-modal").modal("show");
+      }
+    });
+  }
+</script>
+<script>
+  function showDeleteUserModal(user) {
+    // Populate the modal with the user data
+    document.getElementById('deleteUserId').innerText = user.id;
+    document.getElementById('deleteUserFirstName').innerText = user.firstName;
+    document.getElementById('deleteUserLastName').innerText = user.lastName;
+    document.getElementById('deleteUserAge').innerText = user.age;
+    document.getElementById('deleteUserEmail').innerText = user.email;
+    document.getElementById('deleteUserRole').innerText = user.roles.map(r => r.name).join(', ');
+
+    // Set the user ID in the hidden input field
+    document.getElementById('deleteUserIdInput').value = user.id;
+
+    // Show the modal
+    $('#deleteUserModal').modal('show');
+  }
+
+  function deleteUser(userId) {
+    // Get the user data
+    const user = {
+      id: userId,
+      firstName: $('#firstName-' + userId).text(),
+      lastName: $('#lastName-' + userId).text(),
+      age: $('#age-' + userId).text(),
+      email: $('#email-' + userId).text(),
+      roles: JSON.parse($('#roles-' + userId).text())
+    };
+
+    // Show the modal
+    showDeleteUserModal(user);
+  }
+
+  // Attach the event listener to the delete button
+  $('.delete-button').click(function() {
+    const userId = $(this).data('userId');
+    deleteUser(userId);
+  });
+
+  // Attach the event listener to the delete form
+  $('#deleteUserForm').submit(function(e) {
+    e.preventDefault();
+
+    const userId = $('#deleteUserIdInput').val();
+
+    // Send the delete request
+    $.ajax({
+      url: '/admin/delete/' + userId,
+      type: 'DELETE',
+      success: function(result) {
+        // Hide the modal
+        $('#deleteUserModal').modal('hide');
+
+        // Reload the page
+        location.reload();
+      },
+      error: function(xhr, status, error) {
+        console.error(xhr.responseText);
+      }
+    });
+  });
+</script>
+
+
+</body>
+</html>
