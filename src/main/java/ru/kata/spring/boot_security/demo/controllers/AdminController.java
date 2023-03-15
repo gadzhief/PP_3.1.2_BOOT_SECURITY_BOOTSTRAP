@@ -1,8 +1,6 @@
 package ru.kata.spring.boot_security.demo.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,51 +23,26 @@ public class AdminController {
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public AdminController(UserDetailsServiceImpl userDetailsService, RoleRepository roleRepository,
+    public AdminController(UserDetailsServiceImpl userDetailsService,
+                           RoleRepository roleRepository,
                            PasswordEncoder passwordEncoder) {
         this.userDetailsService = userDetailsService;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
-//    @GetMapping()
-//    public String adminEndpoint(Model model, Authentication authentication) {
-//        User loggedInUser = (User) authentication.getPrincipal();
-//        List<User> users = userDetailsService.getUsers();
-//        model.addAttribute("users", loggedInUser);
-//        model.addAttribute("users", users);
-//        return "admin";
-//    }
-
-//    @GetMapping("/boot")
-//    public String adminEndpointBoot(Principal principal, Model model, @AuthenticationPrincipal User user, Authentication authentication) {
-//        //String loggedInUsername = authentication.getName();
-//        List<User> users = userDetailsService.getUsers();
-//       // model.addAttribute("loggedInUsername", loggedInUsername);
-//        model.addAttribute("admin", userDetailsService.findByEmail(principal.getName()));
-//        model.addAttribute("newUser", new User());
-//        model.addAttribute("users", users);
-//        model.addAttribute("rolesAdd", roleRepository.findAll());
-//        return "admin_boot";
-//    }
-    @GetMapping("")
-    public String showAllUsers(Principal principal, Model model, @AuthenticationPrincipal User user) {
+    @GetMapping()
+    public String showAllUsers(Model model, Principal principal) {
         model.addAttribute("users", userDetailsService.getUsers());
         model.addAttribute("admin", userDetailsService.findByEmail(principal.getName()));
         model.addAttribute("newUser", new User());
         model.addAttribute("rolesAdd", roleRepository.findAll());
-        return "admin_boot";
+        return "admin";
     }
 
-//    @GetMapping("/create")
-//    public String createUserForm(Model model) {
-//        model.addAttribute("users", new User());
-//        model.addAttribute("roles", roleRepository.findAll());
-//        return "create";
-//    }
-
     @PostMapping("/create")
-    public String adminCreateEndpoint(@ModelAttribute User user, @RequestParam(name = "roleNames", required = false) List<String> roleNames) {
+    public String adminCreateEndpoint(@ModelAttribute User user,
+                                      @RequestParam(name = "roleNames", required = false) List<String> roleNames) {
 
         String encodedPassword = passwordEncoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
@@ -87,19 +60,11 @@ public class AdminController {
         return "redirect:/admin";
     }
 
-//    @GetMapping("/edit/{id}")
-//    public String updateUserForm(Model model, @PathVariable("id") Long id) {
-//
-//        model.addAttribute("user", userDetailsService.getUserById(id));
-//        model.addAttribute("roles", roleRepository.findAll());
-//        return "update-user";
-//    }
-
     @PostMapping("/edit/{id}")
     public String update(@PathVariable("id") Long id,
                          @ModelAttribute("user") User user,
                          @RequestParam(name = "roleNames", required = false) List<String> roleNames) {
-
+        System.out.println(user);
         Set<Role> userRoles = roleRepository.findByNameIn(roleNames);
         String encodedPassword = passwordEncoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
