@@ -29,6 +29,6 @@ public class UserController {
         model.addAttribute("user", userDetailsService.getUserById(user.get().getId()));
         return "user";
 
-}
+    }
 
 }

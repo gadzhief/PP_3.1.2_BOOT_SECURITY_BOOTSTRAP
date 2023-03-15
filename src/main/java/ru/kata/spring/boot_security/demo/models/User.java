@@ -24,7 +24,9 @@ public class User implements UserDetails {
     private String firstName;
     private String lastName;
     private int age;
+    @Column(nullable = false)
     private String password;
+    @Column(nullable = false, unique = true)
     private String email;
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "users_roles",

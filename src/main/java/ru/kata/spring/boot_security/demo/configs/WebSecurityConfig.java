@@ -15,10 +15,14 @@ import ru.kata.spring.boot_security.demo.services.UserDetailsServiceImpl;
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private final SuccessUserHandler successUserHandler;
     private final UserDetailsServiceImpl userDetailsService;
+    private final DaoAuthenticationProvider daoAuthenticationProvider;
 
-    public WebSecurityConfig(SuccessUserHandler successUserHandler, UserDetailsServiceImpl userDetailsService) {
+    public WebSecurityConfig(SuccessUserHandler successUserHandler,
+                             UserDetailsServiceImpl userDetailsService,
+                             DaoAuthenticationProvider daoAuthenticationProvider) {
         this.successUserHandler = successUserHandler;
         this.userDetailsService = userDetailsService;
+        this.daoAuthenticationProvider = daoAuthenticationProvider;
     }
 
     @Override
@@ -33,8 +37,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/css/bootstrap.min.css", "/js/bootstrap.bundle.min.js").permitAll()
                 .anyRequest().authenticated()
                 .and()
-                .formLogin().successHandler(successUserHandler)
+                .formLogin()
+                .loginPage("/login")
+                .successHandler(successUserHandler)
                 .loginProcessingUrl("/login")
+                .usernameParameter("login")
+                .passwordParameter("password")
                 .permitAll()
                 .and()
                 .logout()
@@ -48,7 +56,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Bean
     public DaoAuthenticationProvider daoAuthenticationProvider() {
-        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
         daoAuthenticationProvider.setUserDetailsService(userDetailsService);
         return daoAuthenticationProvider;
