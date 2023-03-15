@@ -2,18 +2,19 @@ package ru.kata.spring.boot_security.demo.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import ru.kata.spring.boot_security.demo.repositories.RoleRepository;
-import ru.kata.spring.boot_security.demo.services.UserDetailsServiceImpl;
 import ru.kata.spring.boot_security.demo.models.Role;
 import ru.kata.spring.boot_security.demo.models.User;
+import ru.kata.spring.boot_security.demo.repositories.RoleRepository;
+import ru.kata.spring.boot_security.demo.services.UserDetailsServiceImpl;
 
-import java.util.*;
+import java.security.Principal;
+import java.util.List;
+import java.util.Set;
 
 @Controller
 @RequestMapping("/admin")
@@ -31,30 +32,41 @@ public class AdminController {
         this.passwordEncoder = passwordEncoder;
     }
 
-    @GetMapping()
-    public String adminEndpoint(Model model, Authentication authentication) {
-        User loggedInUser = (User) authentication.getPrincipal();
-        List<User> users = userDetailsService.getUsers();
-        model.addAttribute("users", loggedInUser);
-        model.addAttribute("users", users);
-        return "admin";
-    }
+//    @GetMapping()
+//    public String adminEndpoint(Model model, Authentication authentication) {
+//        User loggedInUser = (User) authentication.getPrincipal();
+//        List<User> users = userDetailsService.getUsers();
+//        model.addAttribute("users", loggedInUser);
+//        model.addAttribute("users", users);
+//        return "admin";
+//    }
 
-    @GetMapping("/boot")
-    public String adminEndpointBoot(Model model, Authentication authentication) {
-        String loggedInUsername = authentication.getName();
-        List<User> users = userDetailsService.getUsers();
-        model.addAttribute("loggedInUsername", loggedInUsername);
-        model.addAttribute("users", users);
+//    @GetMapping("/boot")
+//    public String adminEndpointBoot(Principal principal, Model model, @AuthenticationPrincipal User user, Authentication authentication) {
+//        //String loggedInUsername = authentication.getName();
+//        List<User> users = userDetailsService.getUsers();
+//       // model.addAttribute("loggedInUsername", loggedInUsername);
+//        model.addAttribute("admin", userDetailsService.findByEmail(principal.getName()));
+//        model.addAttribute("newUser", new User());
+//        model.addAttribute("users", users);
+//        model.addAttribute("rolesAdd", roleRepository.findAll());
+//        return "admin_boot";
+//    }
+    @GetMapping("")
+    public String showAllUsers(Principal principal, Model model, @AuthenticationPrincipal User user) {
+        model.addAttribute("users", userDetailsService.getUsers());
+        model.addAttribute("admin", userDetailsService.findByEmail(principal.getName()));
+        model.addAttribute("newUser", new User());
+        model.addAttribute("rolesAdd", roleRepository.findAll());
         return "admin_boot";
     }
 
-    @GetMapping("/create")
-    public String createUserForm(Model model) {
-        model.addAttribute("users", new User());
-        model.addAttribute("roles", roleRepository.findAll());
-        return "create";
-    }
+//    @GetMapping("/create")
+//    public String createUserForm(Model model) {
+//        model.addAttribute("users", new User());
+//        model.addAttribute("roles", roleRepository.findAll());
+//        return "create";
+//    }
 
     @PostMapping("/create")
     public String adminCreateEndpoint(@ModelAttribute User user, @RequestParam(name = "roleNames", required = false) List<String> roleNames) {
@@ -75,13 +87,13 @@ public class AdminController {
         return "redirect:/admin";
     }
 
-    @GetMapping("/edit/{id}")
-    public String updateUserForm(Model model, @PathVariable("id") Long id) {
-
-        model.addAttribute("user", userDetailsService.getUserById(id));
-        model.addAttribute("roles", roleRepository.findAll());
-        return "update-user";
-    }
+//    @GetMapping("/edit/{id}")
+//    public String updateUserForm(Model model, @PathVariable("id") Long id) {
+//
+//        model.addAttribute("user", userDetailsService.getUserById(id));
+//        model.addAttribute("roles", roleRepository.findAll());
+//        return "update-user";
+//    }
 
     @PostMapping("/edit/{id}")
     public String update(@PathVariable("id") Long id,
